@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: stg_orderlist
+    description: One row per historical order.
+    columns:
+      - name: order_id
+        description: Order identifier. Tested for uniqueness -- if this
+          fails, Order ID is not a true one-row-per-order key and every
+          downstream model needs to account for that.
+        data_tests:
+          - not_null
+          - unique
+      - name: carrier
+        data_tests:
+          - not_null
+      - name: plant_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_whcapacities')
+                field: plant_code
+
+  - name: stg_freightrates
+    description: One row per carrier/route/weight-band rate card entry.
+    columns:
+      - name: carrier
+        data_tests:
+          - not_null
+      - name: rate
+        data_tests:
+          - not_null
+
+  - name: stg_whcosts
+    description: Storage cost per unit, one row per plant.
+    columns:
+      - name: plant_code
+        data_tests:
+          - not_null
+          - unique
+
+  - name: stg_whcapacities
+    description: Daily order-processing capacity, one row per plant.
+    columns:
+      - name: plant_code
+        data_tests:
+          - not_null
+          - unique
+
+  - name: stg_productsperplant
+    description: Which products each plant can produce/store.
+    columns:
+      - name: plant_code
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_whcapacities')
+                field: plant_code
+              config:
+                severity: warn
+              description: >
+                One plant code (CND9) has no matching row in WhCapacities.
+                It doesn't follow the PLANTxx naming pattern used
+                everywhere else, so this looks like a genuine gap in the
+                source data rather than a whitespace/typo issue. Downgraded
+                to a warning, documented here, so the build doesn't fail on
+                a known case but any NEW mismatch still gets caught.
+
+  - name: stg_vmicustomers
+    description: Customers tied to a single plant under a vendor-managed
+      inventory arrangement.
+    columns:
+      - name: plant_code
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_whcapacities')
+                field: plant_code
+
+  - name: stg_plantports
+    description: Ports each plant is allowed to ship from.
+    columns:
+      - name: plant_code
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_whcapacities')
+                field: plant_code

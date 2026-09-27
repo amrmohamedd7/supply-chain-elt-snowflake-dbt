@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: mart_carrier_performance
+    description: One row per carrier -- volume, cost, on-time rate, and
+      rate-card match rate. The final table for the "carrier performance"
+      page of the dashboard.
+    columns:
+      - name: carrier
+        data_tests:
+          - unique
+          - not_null
+      - name: total_orders
+        data_tests:
+          - not_null
+
+  - name: mart_warehouse_operations
+    description: >
+      One row per plant -- capacity, storage cost, and the current order
+      backlog. All orders share a single order_date (a snapshot, not a
+      time series), so backlog_days_at_capacity means "how many days of
+      stated daily capacity would it take to clear this backlog" -- not a
+      same-day overload rate. A plant with 0 total_orders had no orders
+      assigned to it at all in this snapshot.
+    columns:
+      - name: plant_code
+        data_tests:
+          - unique
+          - not_null
+      - name: daily_capacity
+        data_tests:
+          - not_null

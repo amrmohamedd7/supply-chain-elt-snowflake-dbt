@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    database: SUPPLY_CHAIN
+    schema: RAW
+    tables:
+      - name: raw_orderlist
+      - name: raw_freightrates
+      - name: raw_whcosts
+      - name: raw_whcapacities
+      - name: raw_productsperplant
+      - name: raw_vmicustomers
+      - name: raw_plantports
